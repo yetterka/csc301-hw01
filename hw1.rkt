@@ -9,8 +9,16 @@
 ;;;   heap, a heap
 (define heap-new
   (lambda (higher-priority?)
-    (vector 0 (make-vector 31) higher-priority?)))
+    (vector 0 (make-vector 2) higher-priority?)))
 
+;;; Procedure:
+;;;   get-vector-from-heap
+;;; Parameters:
+;;;   heap, a heap
+;;; Purpose:
+;;;   return the vector stored in the heap structure 
+;;; Produces:
+;;;   vector
 (define get-vector-from-heap
   (lambda (heap)
     (vector-ref heap 1)))
@@ -93,13 +101,18 @@
 ;;;Procedure:
 ;;;   expand
 ;;; Parameters:
-;;;   
-;;;   value, a value
+;;;   heap
 ;;; Purpose:
-;;;   add a value to the heap
+;;;   double the size of the heap and re-copy original heap elements
 ;;; Produces:
-;;;   new heap with old heap copied
-    
+;;;   new heap with old heap copied in the front
+(define expand!
+  (lambda (heap)
+    (let* ([len (vector-ref heap 0)]
+          [vec (vector-ref heap 1)]
+          [new-vec (make-vector (* len 2))])
+      (vector-copy! new-vec 0 vec)
+      (vector-set! heap 1 new-vec))))
 
 ;;;Procedure:
 ;;;   add
@@ -115,15 +128,7 @@
     (let ([vec (get-vector-from-heap heap)]
           [len (vector-ref heap 0)])
     (when(>= len (vector-length vec))
-        "double me!")
-    (vector-set! vec (vector-last heap) value)
+        (expand! heap))
+    (vector-set! (get-vector-from-heap heap) (vector-last heap) value)
     (vector-set! heap 0 (+ len 1))
     (sort-by-priority heap len))))
-
-
-(define v
-  (heap-new >))
-(add v 324)
-(add v 100)
-(add v 40)
-(add v 200)
