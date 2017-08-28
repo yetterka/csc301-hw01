@@ -1,13 +1,28 @@
+import java.util.Comparator;
 
-public class Point {
+
+public class Point implements Comparator<Point>{
 	int x;
 	int y;
-	boolean visited;
 	
 	public Point(int x, int y){
 		this.x = x;
 		this.y = y;
-		visited = false;
+	}
+	
+	public void print(){
+		System.out.printf("(%d, %d)\n", this.x, this.y);
+	}
+	
+	public int diagonalValue(){
+		return x-y;
+	}
+	
+	public int compare(Point p1, Point p2){
+		if(p1.diagonalValue() == p2.diagonalValue()){
+			return p1.x - p2.x;
+		}
+		return p1.diagonalValue() - p2.diagonalValue(); 
 	}
 
 	public double distanceTo(Point p){
