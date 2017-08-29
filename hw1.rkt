@@ -74,7 +74,7 @@
 ;;;   return nothing, call for side-effect
 (define swap
   (lambda (heap index-one index-two)
-    (letrec ((vector (get-vector-from-heap heap))
+    (let* ((vector (get-vector-from-heap heap))
           (temp (vector-ref vector index-one)))
       (vector-set! vector index-one (vector-ref vector index-two))
       (vector-set! vector index-two temp)
