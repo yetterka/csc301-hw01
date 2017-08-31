@@ -9,7 +9,7 @@
 ;;;   heap, a heap
 (define heap-new
   (lambda (higher-priority?)
-    (vector 0 (make-vector 2) higher-priority?)))
+    (vector 0 (make-vector 21) higher-priority?)))
 
 ;;; Procedure:
 ;;;   get-vector-from-heap
@@ -35,7 +35,68 @@
   (lambda (heap)
     (vector-ref heap 0)))
 
+;;;Procedure:
+;;;   swap
+;;; Parameters:
+;;;   vector
+;;;   index-one
+;;;   index-two
+;;; Purpose:
+;;;   switch two elements positions in a vector
+;;; Produces:
+;;;   return nothing, call for side-effect
+(define swap!
+  (lambda (vector index-one index-two)
+    (let ([temp (vector-ref vector index-one)])
+      (vector-set! vector index-one (vector-ref vector index-two))
+      (vector-set! vector index-two temp))))
 
+;;; Procedure:
+;;;   percolate-up!
+;;; Parameters:
+;;;   heap, a heap
+;;;   pos, the current position in the heap
+;;; Purpose:
+;;;   Sort through the heap by priority
+;;; Produces:
+;;;   heap, a heap
+(define percolate-up!
+  (lambda (heap pos)
+    (let ([vec (vector-ref heap 1)]
+          [higher-priority? (vector-ref heap 2)])
+      (let kernel ([pos-new pos])
+        (if (zero? pos-new)
+            (void)
+            (if (higher-priority? (vector-ref vec pos-new)
+                                  (vector-ref vec (quotient pos-new 2)))
+                (swap! vec (quotient pos-new 2) pos-new)
+                (kernel (quotient pos-new 2))))))))
+
+;;; Procedure:
+;;;   percolate-down!
+;;; Parameters:
+;;;   heap, a heap
+;;;   pos, the current position in the heap
+;;; Purpose:
+;;;   Sort through the heap by priority
+;;; Produces:
+;;;   heap, a heap
+(define percolate-down!
+  (lambda (heap)
+    (let ([vec (vector-ref heap 1)]
+          [higher-priority? (vector-ref heap 2)]
+          [length (vector-ref heap 0)])
+      (swap! vec 0 (- length 1)
+      (let kernel ([pos-new 0])
+        (cond [(eq? pos-new length) (void)]
+              [(not (higher-priority? (vector-ref vec pos-new)
+                                  (vector-ref vec (+ (* pos-new 2) 1))))
+                (swap! vec (+ (* pos-new 2) 1) pos-new)
+                (kernel (+ (quotient pos-new 2) 1))]
+              [(not (higher-priority? (vector-ref vec pos-new)
+                                  (vector-ref vec (+ (* pos-new 2) 2))))
+                (swap! vec (+ (* pos-new 2) 2) pos-new)
+                (kernel (+ (* pos-new 2)2))]))))))
 ;;;Procedure:
 ;;;   first
 ;;; Parameters:
@@ -46,7 +107,9 @@
 ;;;   fill me in
 (define first
   (lambda (heap)
-    (vector-ref (get-vector-from-heap heap) (vector-last heap))))
+    (if (= (vector-ref heap 0) 0)
+        (error "The heap is empty")
+        (vector-ref (get-vector-from-heap heap) 0))))
 
 ;;;Procedure:
 ;;;   get
@@ -61,42 +124,6 @@
     (let ([len (vector-ref heap 0)])
     (vector-set! heap 0 (- len 1))
     (vector-ref (get-vector-from-heap heap) (+ 1 (vector-last heap))))))
-
-;;;Procedure:
-;;;   swap
-;;; Parameters:
-;;;   vector
-;;;   index-one
-;;;   index-two
-;;; Purpose:
-;;;   switch two elements positions in a vector
-;;; Produces:
-;;;   return nothing, call for side-effect
-(define swap
-  (lambda (heap index-one index-two)
-    (let* ((vector (get-vector-from-heap heap))
-          (temp (vector-ref vector index-one)))
-      (vector-set! vector index-one (vector-ref vector index-two))
-      (vector-set! vector index-two temp)
-      heap)))
-
-;;;Procedure:
-;;;   sort-by-priority
-;;; Parameters:
-;;;   heap, a heap
-;;; Purpose:
-;;;   reorder the vector in the heap by priority
-;;; Produces:
-;;;   return nothing, call for side-effect
-(define sort-by-priority
-  (lambda (heap index)
-    (let ([vec (get-vector-from-heap heap)]
-          [higher-priority?(vector-ref heap 2)])
-    (if (<= index 0)
-        heap
-        (if (higher-priority? (vector-ref vec index) (vector-ref vec (- index 1)))
-            heap
-            (sort-by-priority (swap heap (- index 1) index) (- index 1)))))))
         
 ;;;Procedure:
 ;;;   expand
@@ -131,4 +158,4 @@
         (expand! heap))
     (vector-set! (get-vector-from-heap heap) (vector-last heap) value)
     (vector-set! heap 0 (+ len 1))
-    (sort-by-priority heap len))))
+    (percolate-up! heap len))))
